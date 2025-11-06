@@ -1,36 +1,992 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Amidemon 4 Games — Alchematrix</title>
-  <style>
-    body { font-family: sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
-    header { background: #3c2a4d; color: white; padding: 20px; text-align: center; }
-    section { padding: 20px; max-width: 800px; margin: auto; background: white; }
-    h2 { color: #3c2a4d; }
-    footer { text-align: center; padding: 10px; font-size: 0.9em; color: #777; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dima Zdanovich - Unity Developer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Oranienbaum&family=Liter&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --gold-primary: #d4af37;
+            --gold-light: #ffd700;
+            --brown-warm: #8b4513;
+            --brown-dark: #2c1810;
+            --wheat: #f5deb3;
+        }
+        
+        body {
+            background: var(--bg-primary);
+            color: var(--wheat);
+            font-family: 'Liter', serif;
+            overflow-x: hidden;
+        }
+        
+        .hero-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--gold-primary), var(--gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+        }
+        
+        .nav-link {
+            font-family: 'Oranienbaum', serif;
+            color: var(--wheat);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-link:hover {
+            color: var(--gold-light);
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gold-primary);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .project-card {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(139, 69, 19, 0.1));
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+            border-color: rgba(212, 175, 55, 0.6);
+        }
+        
+        .contact-btn {
+            background: linear-gradient(45deg, var(--gold-primary), var(--gold-light));
+            color: var(--bg-primary);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .skill-item {
+            background: rgba(44, 24, 16, 0.8);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .skill-item:hover {
+            border-color: var(--gold-primary);
+            background: rgba(212, 175, 55, 0.1);
+        }
+        
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+        
+        .experience-item {
+            border-left: 3px solid var(--gold-primary);
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .experience-item::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            background: var(--gold-primary);
+            border-radius: 50%;
+        }
+        
+        /* Background animations */
+        #stars-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .floating-particles {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--gold-light);
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: float 6s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0; }
+            50% { transform: translateY(-100px) rotate(180deg); opacity: 1; }
+        }
+        
+        .hero-section {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            .nav-link {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>Amidemon 4 Games</h1>
-    <p>Independent Game Developer — Creator of Alchematrix</p>
-  </header>
+    <!-- Stars Background Canvas -->
+    <canvas id="stars-canvas"></canvas>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-black bg-opacity-80 backdrop-blur-sm z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="hero-title text-2xl">Amidemon 4 Games - Dima Zdanovich</div>
+            <div class="flex space-x-8">
+                <a href="#about" class="nav-link">About</a>
+                <a href="#experience" class="nav-link">Experience</a>
+                <a href="#projects" class="nav-link">Projects</a>
+                <a href="#skills" class="nav-link">Skills</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </div>
+        </div>
+    </nav>
 
-  <section>
-    <h2>About Me</h2>
-    <p>I'm an independent game developer based in Belarus, working under the creative label Amidemon 4 Games. My focus is on magical, cozy, and educational experiences that blend visual storytelling with playful mechanics.</p>
+    <!-- Hero Section -->
+    <section class="hero-section" id="hero">
+        <div class="hero-content text-center max-w-4xl mx-auto px-6">
+            <div class="w-32 h-32 mx-auto mb-8 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-6xl opacity-0" id="profile-avatar">
+                🎮
+            </div>
+            <h1 class="hero-title text-5xl md:text-7xl mb-6 opacity-0" id="main-title">
+                Dima Zdanovich
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 opacity-0" id="subtitle">
+                Unity Developer & Game Designer
+            </p>
+			 <p class="text-xl md:text-2xl mb-8 opacity-0" id="subtitle">
+                Amidemon 4 Games
+            </p>
+            <p class="text-lg text-gray-300 max-w-2xl mx-auto mb-12 opacity-0" id="description">
+                C++/C# Software Engineer with 8+ years of experience in game development, specializing in Unity and creating engaging gaming experiences
+            </p>
+            <button class="contact-btn opacity-0" id="cta-btn" onclick="scrollToSection('projects')">
+                View My Work
+            </button>
+        </div>
+        <div class="scroll-indicator text-4xl opacity-0" id="scroll-indicator">⬇️</div>
+    </section>
 
-    <h2>Current Project: Alchematrix</h2>
-    <p><strong>Alchematrix</strong> is a mobile puzzle game where players mix magical ingredients, solve math-based challenges, and unlock alchemical secrets. Designed for both fun and learning, it features modular difficulty, visual effects, and a rewarding progression system.</p>
+    <!-- About Section -->
+    <section class="py-20 px-6" id="about">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="hero-title text-4xl md:text-5xl text-center mb-16">About Me</h2>
+            
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6 text-yellow-400">Professional Summary</h3>
+                    <p class="text-gray-300 mb-6 leading-relaxed">
+                        Experienced C++/C# Software Engineer and Unity Developer with over 8 years in game development. 
+                        Currently working as a Unity Developer at SkillBox Academy while running my independent studio Amidemon Games. 
+                        My expertise spans from match-3 puzzle games to complex strategy games, with a focus on creating engaging player experiences.
+                    </p>
+                    <p class="text-gray-300 mb-6 leading-relaxed">
+                        I specialize in Unity development, C# programming, and game mechanics implementation. My experience includes 
+                        working on popular titles like Puzzle Heart Match-3 Adventure and Cradle of Empires, as well as developing 
+                        complete strategy games from the ground up.
+                    </p>
+                    <p class="text-gray-300 leading-relaxed">
+                        Currently developing Alchematrix - an educational puzzle game that combines mathematical challenges with 
+                        magical alchemy elements, designed to make learning fun and engaging for players of all ages.
+                    </p>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="skill-item p-4 rounded-lg">
+                        <h4 class="font-semibold text-yellow-400 mb-2">Location</h4>
+                        <p class="text-gray-300">Republic of Belarus</p>
+                    </div>
+                    
+                    <div class="skill-item p-4 rounded-lg">
+                        <h4 class="font-semibold text-yellow-400 mb-2">Experience</h4>
+                        <p class="text-gray-300">8+ Years in Game Development</p>
+                    </div>
+                    
+                    <div class="skill-item p-4 rounded-lg">
+                        <h4 class="font-semibold text-yellow-400 mb-2">Languages</h4>
+                        <p class="text-gray-300">Russian (Native), English (Working)</p>
+                    </div>
+                    
+                    <div class="skill-item p-4 rounded-lg">
+                        <h4 class="font-semibold text-yellow-400 mb-2">Email</h4>
+                        <p class="text-gray-300">amidemon7@gmail.com</p>
+                    </div>
+                    
+                    <div class="skill-item p-4 rounded-lg">
+                        <h4 class="font-semibold text-yellow-400 mb-2">Education</h4>
+                        <p class="text-gray-300">BS in Software Development, BRU</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <h2>Contact</h2>
-    <p>Email: amidemon4games@gmail.com<br>
-       Location: Mogilev Region, Belarus</p>
-  </section>
+    <!-- Experience Section -->
+    <section class="py-20 px-6" id="experience">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="hero-title text-4xl md:text-5xl text-center mb-16">Professional Experience</h2>
+            
+            <div class="space-y-8">
+                <div class="experience-item">
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-semibold text-yellow-400">Unity Developer</h3>
+                            <p class="text-gray-300">SkillBox Academy</p>
+                        </div>
+                        <span class="text-sm text-gray-400 mt-2 md:mt-0">September 2025 - Present</span>
+                    </div>
+                    <p class="text-gray-300 mb-4">
+                        Currently working as a Unity Developer at SkillBox Academy, contributing to educational game development 
+                        while continuing independent projects under Amidemon Games label.
+                    </p>
+                </div>
+                
+                <div class="experience-item">
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-semibold text-yellow-400">Unity Developer</h3>
+                            <p class="text-gray-300">Diesel Puppet</p>
+                        </div>
+                        <span class="text-sm text-gray-400 mt-2 md:mt-0">May 2019 - May 2023</span>
+                    </div>
+                    <p class="text-gray-300 mb-4">
+                        Worked as Unity Developer at Diesel Puppet for 4 years, gaining extensive experience in professional 
+                        game development environment and contributing to various mobile game projects.
+                    </p>
+                </div>
+                
+                <div class="experience-item">
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-semibold text-yellow-400">Software Engineer</h3>
+                            <p class="text-gray-300">Awem Games</p>
+                        </div>
+                        <span class="text-sm text-gray-400 mt-2 md:mt-0">May 2018 - April 2019</span>
+                    </div>
+                    <p class="text-gray-300 mb-4">
+                        Worked on popular match-3 games including Puzzle Heart Match-3 Adventure and Cradle of Empires, 
+                        focusing on adding new mechanics, game events, and bug fixing using C++ and Lua.
+                    </p>
+                    <ul class="text-sm text-gray-400 space-y-1">
+                        <li>• Added new match-3 mechanics to existing games</li>
+                        <li>• Implemented new game events and features</li>
+                        <li>• Fixed bugs and optimized game performance</li>
+                        <li>• Worked with C++ and Lua programming languages</li>
+                    </ul>
+                </div>
+                
+                <div class="experience-item">
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-semibold text-yellow-400">Software Engineer</h3>
+                            <p class="text-gray-300">Fenomen Games</p>
+                        </div>
+                        <span class="text-sm text-gray-400 mt-2 md:mt-0">September 2013 - March 2017</span>
+                    </div>
+                    <p class="text-gray-300 mb-4">
+                        Led the development of "Gods of the Skies" - a complete strategy game similar to Clash of Clans. 
+                        Responsible for full client-side development, game systems, and optimization using C++ and JSON.
+                    </p>
+                    <ul class="text-sm text-gray-400 space-y-1">
+                        <li>• Developed building and unit functionality systems</li>
+                        <li>• Integrated sound and visual effects</li>
+                        <li>• Created game bots and testing automation</li>
+                        <li>• Developed level editor and tools</li>
+                        <li>• Implemented PvP systems and character management</li>
+                        <li>• Wrote automated tests and performance optimization</li>
+                        <li>• Managed full client-side development</li>
+                    </ul>
+                </div>
+                
+                <div class="experience-item">
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-semibold text-yellow-400">Freelance Software Engineer</h3>
+                            <p class="text-gray-300">Independent Work</p>
+                        </div>
+                        <span class="text-sm text-gray-400 mt-2 md:mt-0">2007 - 2013</span>
+                    </div>
+                    <p class="text-gray-300 mb-4">
+                        Developed various software solutions, course projects, and diploma works using C++, C#, VBA, Pascal, and Delphi. 
+                        Built strong foundation in programming and software development principles.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-  <footer>
-    &copy; 2025 Amidemon 4 Games. All rights reserved.
-  </footer>
+    <!-- Projects Section -->
+    <section class="py-20 px-6" id="projects">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="hero-title text-4xl md:text-5xl text-center mb-16">Notable Projects</h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Alchematrix Project -->
+                <div class="project-card p-6 rounded-xl" onclick="showProjectDetail('alchematrix')">
+                    <div class="text-6xl mb-4 text-center">🧪</div>
+                    <h3 class="text-2xl font-semibold mb-4 text-yellow-400 text-center">Alchematrix</h3>
+                    <p class="text-gray-300 mb-6 text-center">
+                        A mobile puzzle game where players mix magical ingredients, solve math-based challenges, 
+                        and unlock alchemical secrets in an enchanting world.
+                    </p>
+                    <div class="space-y-2 mb-6">
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-400">Platform:</span>
+                            <span class="text-sm">Mobile (iOS/Android)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-400">Genre:</span>
+                            <span class="text-sm">Educational Puzzle</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-400">Status:</span>
+                            <span class="text-sm text-green-400">In Development</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-400">Engine:</span>
+                            <span class="text-sm">Unity</span>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-xs text-gray-500">Click to learn more</span>
+                    </div>
+                </div>
+                
+                <!-- Puzzle Heart Match-3 -->
+                <div class="project-card p-6 rounded-xl" onclick="showProjectDetail('puzzleheart')">
+                    <div class="text-6xl mb-4 text-center">💎</div>
+                    <h3 class="text-2xl font-semibold mb-4 text-yellow-400 text-center">Puzzle Heart Match-3 Adventure</h3>
+                    <p class="text-gray-300 mb-6 text-center">
+                        Popular match-3 game where I added new mechanics, fixed bugs, and implemented game events 
+                        using C++ and Lua during my time at Awem Games.
+                    </p>
+                    <div class="space-y-2 mb-6">
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-400">Platform:</span>
+                            <span class="text-sm">Mobile</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-400">Genre:</span>
+                            <span class="text-sm">Match-3 Puzzle</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-400">Role:</span>
+                            <span class="text-sm">Feature Development</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-400">Tech:</span>
+                            <span class="text-sm">C++, Lua</span>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-xs text-gray-500">Click to learn more</span>
+                    </div>
+                </div>
+                
+                <!-- Gods of the Skies -->
+                <div class="project-card p-6 rounded-xl" onclick="showProjectDetail('gods')">
+                    <div class="text-6xl mb-4 text-center">⚔️</div>
+                    <h3 class="text-2xl font-semibold mb-4 text-yellow-400 text-center">Gods of the Skies</h3>
+                    <p class="text-gray-300 mb-6 text-center">
+                        Complete strategy game similar to Clash of Clans. Led full client-side development, 
+                        implemented PvP systems, and created comprehensive testing frameworks.
+                    </p>
+                    <div class="space-y-2 mb-6">
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-400">Platform:</span>
+                            <span class="text-sm">Mobile</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-400">Genre:</span>
+                            <span class="text-sm">Strategy</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-400">Role:</span>
+                            <span class="text-sm">Lead Developer</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-400">Tech:</span>
+                            <span class="text-sm">C++, JSON</span>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-xs text-gray-500">Click to learn more</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section class="py-20 px-6" id="skills">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="hero-title text-4xl md:text-5xl text-center mb-16">Technical Skills</h2>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-8 text-yellow-400">Programming & Development</h3>
+                    <div class="space-y-4">
+                        <div class="skill-item p-4 rounded-lg">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-semibold">C#</span>
+                                <span class="text-yellow-400">95%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full" style="width: 95%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="skill-item p-4 rounded-lg">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-semibold">Unity</span>
+                                <span class="text-yellow-400">93%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full" style="width: 93%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="skill-item p-4 rounded-lg">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-semibold">C++</span>
+                                <span class="text-yellow-400">90%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="skill-item p-4 rounded-lg">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-semibold">Lua</span>
+                                <span class="text-yellow-400">85%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="skill-item p-4 rounded-lg">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-semibold">JSON</span>
+                                <span class="text-yellow-400">88%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full" style="width: 88%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-2xl font-semibold mb-8 text-yellow-400">Game Development</h3>
+                    <div class="space-y-4">
+                        <div class="skill-item p-4 rounded-lg">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-semibold">Game Design</span>
+                                <span class="text-yellow-400">92%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="skill-item p-4 rounded-lg">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-semibold">Mobile Development</span>
+                                <span class="text-yellow-400">90%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="skill-item p-4 rounded-lg">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-semibold">Match-3 Mechanics</span>
+                                <span class="text-yellow-400">95%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full" style="width: 95%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="skill-item p-4 rounded-lg">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-semibold">Strategy Games</span>
+                                <span class="text-yellow-400">88%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full" style="width: 88%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="skill-item p-4 rounded-lg">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-semibold">UI/UX Implementation</span>
+                                <span class="text-yellow-400">87%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full" style="width: 87%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Certifications -->
+            <div class="mt-16">
+                <h3 class="text-2xl font-semibold mb-8 text-yellow-400 text-center">Certifications & Education</h3>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="skill-item p-4 rounded-lg text-center">
+                        <div class="text-3xl mb-2">🎓</div>
+                        <h4 class="font-semibold text-yellow-400 mb-2">Unity Certification</h4>
+                        <p class="text-sm text-gray-300">Make a Match-Three Puzzle Game in Unity</p>
+                    </div>
+                    
+                    <div class="skill-item p-4 rounded-lg text-center">
+                        <div class="text-3xl mb-2">📜</div>
+                        <h4 class="font-semibold text-yellow-400 mb-2">Game Development</h4>
+                        <p class="text-sm text-gray-300">Certificate in Game Development Fundamentals</p>
+                    </div>
+                    
+                    <div class="skill-item p-4 rounded-lg text-center">
+                        <div class="text-3xl mb-2">🎮</div>
+                        <h4 class="font-semibold text-yellow-400 mb-2">BRU University</h4>
+                        <p class="text-sm text-gray-300">BS in Software Development (2011-2016)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="py-20 px-6" id="contact">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="hero-title text-4xl md:text-5xl mb-8">Get In Touch</h2>
+            <p class="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
+                Looking for a skilled Unity developer? Let's discuss your project and explore how my experience 
+                in game development can bring your ideas to life!
+            </p>
+            
+            <div class="grid md:grid-cols-3 gap-8 mb-12">
+                <div class="text-center">
+                    <div class="text-4xl mb-4">📧</div>
+                    <h3 class="text-lg font-semibold mb-2 text-yellow-400">Email</h3>
+                    <p class="text-gray-300">amidemon7@gmail.com</p>
+                    <p class="text-sm text-gray-400 mt-2">Best for project inquiries</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="text-4xl mb-4">🌐</div>
+                    <h3 class="text-lg font-semibold mb-2 text-yellow-400">LinkedIn</h3>
+                    <p class="text-gray-300">Dima Zdanovich</p>
+                    <a href="https://www.linkedin.com/in/dima-zdanovich/" class="text-yellow-400 hover:text-yellow-300 transition-colors text-sm" target="_blank">
+                        View Profile →
+                    </a>
+                </div>
+                
+                <div class="text-center">
+                    <div class="text-4xl mb-4">📍</div>
+                    <h3 class="text-lg font-semibold mb-2 text-yellow-400">Location</h3>
+                    <p class="text-gray-300">Republic of Belarus</p>
+                    <p class="text-sm text-gray-400 mt-2">Open to remote collaboration</p>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <button class="contact-btn text-lg mr-4" onclick="window.location.href='mailto:amidemon7@gmail.com'">
+                    Send Email
+                </button>
+                <button class="contact-btn text-lg" onclick="window.open('https://www.linkedin.com/in/dima-zdanovich/', '_blank')">
+                    Connect on LinkedIn
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Detail Modal -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden" id="project-modal">
+        <div class="bg-gray-800 p-8 rounded-2xl max-w-2xl mx-4 max-h-96 overflow-y-auto">
+            <div class="text-6xl mb-6 text-center" id="modal-icon">🧪</div>
+            <h3 class="hero-title text-3xl mb-6 text-center" id="modal-title">Alchematrix</h3>
+            <div class="text-gray-300 mb-6" id="modal-content">
+                <p class="mb-4">
+                    Alchematrix is a mobile puzzle game that combines the magic of alchemy with mathematical challenges. 
+                    Players mix magical ingredients, solve equations, and discover new elements in a beautifully crafted world.
+                </p>
+                <div class="grid md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <h4 class="font-semibold text-yellow-400 mb-2">Key Features:</h4>
+                        <ul class="text-sm space-y-1">
+                            <li>• 12 magical ingredients to discover</li>
+                            <li>• 20+ unique recipes to unlock</li>
+                            <li>• Math-based puzzle mechanics</li>
+                            <li>• Beautiful visual effects</li>
+                            <li>• Progressive difficulty system</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-yellow-400 mb-2">Technical Details:</h4>
+                        <ul class="text-sm space-y-1">
+                            <li>• Platform: Mobile (iOS/Android)</li>
+                            <li>• Engine: Unity 2022 LTS</li>
+                            <li>• Language: C#</li>
+                            <li>• Art Style: Magical/Alchemical</li>
+                            <li>• Target Audience: All ages</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-lg">
+                    <h4 class="font-semibold text-yellow-400 mb-2">Development Philosophy:</h4>
+                    <p class="text-sm">
+                        Alchematrix represents my belief that learning should be fun and engaging. By combining mathematical 
+                        concepts with magical elements, the game makes education entertaining and accessible to players of all ages.
+                    </p>
+                </div>
+            </div>
+            <div class="flex justify-center">
+                <button class="px-6 py-3 bg-gray-600 hover:bg-gray-500 rounded-lg font-semibold transition-colors" id="close-modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-8 px-6 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-gray-400">© 2025 Dima Zdanovich. All rights reserved.</p>
+            <p class="text-sm text-gray-500 mt-2">Unity Developer | C++/C# Software Engineer | Game Development Professional</p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize animations and background
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAnimations();
+            initializeStarField();
+            createFloatingParticles();
+            bindEvents();
+        });
+
+        function initializeAnimations() {
+            // Hero section animations
+            anime.timeline({
+                easing: 'easeOutExpo',
+                duration: 1000
+            })
+            .add({
+                targets: '#profile-avatar',
+                opacity: [0, 1],
+                scale: [0.5, 1],
+                delay: 300
+            })
+            .add({
+                targets: '#main-title',
+                opacity: [0, 1],
+                translateY: [50, 0],
+                delay: 200
+            })
+            .add({
+                targets: '#subtitle',
+                opacity: [0, 1],
+                translateY: [30, 0],
+                delay: 150
+            })
+            .add({
+                targets: '#description',
+                opacity: [0, 1],
+                translateY: [20, 0],
+                delay: 100
+            })
+            .add({
+                targets: '#cta-btn',
+                opacity: [0, 1],
+                translateY: [20, 0],
+                delay: 100
+            })
+            .add({
+                targets: '#scroll-indicator',
+                opacity: [0, 1],
+                delay: 500
+            });
+
+            // Scroll animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const elements = entry.target.querySelectorAll('.project-card, .skill-item, .experience-item');
+                        anime({
+                            targets: elements,
+                            opacity: [0, 1],
+                            translateY: [50, 0],
+                            delay: anime.stagger(100),
+                            duration: 800,
+                            easing: 'easeOutExpo'
+                        });
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('section').forEach(section => {
+                observer.observe(section);
+            });
+        }
+
+        function initializeStarField() {
+            const canvas = document.getElementById('stars-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            const stars = [];
+            const starCount = 100;
+            
+            // Create stars
+            for (let i = 0; i < starCount; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 1,
+                    opacity: Math.random() * 0.8 + 0.2,
+                    twinkleSpeed: Math.random() * 0.02 + 0.01,
+                    fallSpeed: Math.random() * 0.5 + 0.2
+                });
+            }
+            
+            function animateStars() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                stars.forEach(star => {
+                    // Twinkle effect
+                    star.opacity += Math.sin(Date.now() * star.twinkleSpeed) * 0.01;
+                    star.opacity = Math.max(0.1, Math.min(0.9, star.opacity));
+                    
+                    // Falling effect
+                    star.y += star.fallSpeed;
+                    if (star.y > canvas.height) {
+                        star.y = -10;
+                        star.x = Math.random() * canvas.width;
+                    }
+                    
+                    // Draw star
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 215, 0, ${star.opacity})`;
+                    ctx.fill();
+                    
+                    // Add glow
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'rgba(255, 215, 0, 0.5)';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                });
+                
+                requestAnimationFrame(animateStars);
+            }
+            
+            animateStars();
+        }
+
+        function createFloatingParticles() {
+            const heroSection = document.getElementById('hero');
+            
+            setInterval(() => {
+                if (Math.random() < 0.3) { // 30% chance to create particle
+                    const particle = document.createElement('div');
+                    particle.className = 'floating-particles';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 2 + 's';
+                    particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                    
+                    heroSection.appendChild(particle);
+                    
+                    setTimeout(() => {
+                        particle.remove();
+                    }, 8000);
+                }
+            }, 1000);
+        }
+
+        function bindEvents() {
+            // Modal controls
+            document.getElementById('close-modal').addEventListener('click', () => {
+                document.getElementById('project-modal').classList.add('hidden');
+            });
+
+            // Close modal on background click
+            document.getElementById('project-modal').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) {
+                    document.getElementById('project-modal').classList.add('hidden');
+                }
+            });
+
+            // Smooth scroll for navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').substring(1);
+                    scrollToSection(targetId);
+                });
+            });
+        }
+
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function showProjectDetail(projectId) {
+            if (projectId === 'alchematrix') {
+                document.getElementById('modal-icon').textContent = '🧪';
+                document.getElementById('modal-title').textContent = 'Alchematrix';
+                document.getElementById('project-modal').classList.remove('hidden');
+            } else if (projectId === 'puzzleheart') {
+                document.getElementById('modal-icon').textContent = '💎';
+                document.getElementById('modal-title').textContent = 'Puzzle Heart Match-3 Adventure';
+                document.getElementById('modal-content').innerHTML = `
+                    <p class="mb-4">
+                        Worked on this popular match-3 game during my time at Awem Games, contributing to its ongoing development 
+                        and player engagement through new features and improvements.
+                    </p>
+                    <div class="grid md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <h4 class="font-semibold text-yellow-400 mb-2">Contributions:</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• Added new match-3 mechanics</li>
+                                <li>• Implemented game events</li>
+                                <li>• Fixed bugs and optimized performance</li>
+                                <li>• Enhanced player progression systems</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-yellow-400 mb-2">Technologies:</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• C++ for core game logic</li>
+                                <li>• Lua for scripting</li>
+                                <li>• Mobile optimization techniques</li>
+                                <li>• Live game maintenance</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bg-gray-700 p-4 rounded-lg">
+                        <h4 class="font-semibold text-yellow-400 mb-2">Impact:</h4>
+                        <p class="text-sm">
+                            Contributed to maintaining and improving a popular mobile game with thousands of active players, 
+                            ensuring smooth gameplay experience and regular content updates.
+                        </p>
+                    </div>
+                `;
+                document.getElementById('project-modal').classList.remove('hidden');
+            } else if (projectId === 'gods') {
+                document.getElementById('modal-icon').textContent = '⚔️';
+                document.getElementById('modal-title').textContent = 'Gods of the Skies';
+                document.getElementById('modal-content').innerHTML = `
+                    <p class="mb-4">
+                        Led the complete client-side development of this strategy game at Fenomen Games. 
+                        This was a comprehensive project similar to Clash of Clans, requiring full game system implementation.
+                    </p>
+                    <div class="grid md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <h4 class="font-semibold text-yellow-400 mb-2">Key Responsibilities:</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• Full client-side development</li>
+                                <li>• Building and unit systems</li>
+                                <li>• PvP system implementation</li>
+                                <li>• Character management systems</li>
+                                <li>• Level editor development</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-yellow-400 mb-2">Technical Achievements:</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• Comprehensive testing frameworks</li>
+                                <li>• Performance optimization</li>
+                                <li>• Sound and visual effects integration</li>
+                                <li>• Game bot development</li>
+                                <li>• GUI programming</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bg-gray-700 p-4 rounded-lg">
+                        <h4 class="font-semibold text-yellow-400 mb-2">Project Scope:</h4>
+                        <p class="text-sm">
+                            Developed a complete strategy game from concept to implementation, managing all aspects of 
+                            client-side development and creating engaging gameplay systems for competitive multiplayer experience.
+                        </p>
+                    </div>
+                `;
+                document.getElementById('project-modal').classList.remove('hidden');
+            }
+        }
+    </script>
 </body>
 </html>
